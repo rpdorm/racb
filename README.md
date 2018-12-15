@@ -39,7 +39,7 @@ $ PYTHONENCODING=utf-8 \
 The `PYTHONUBBUFFERED` environment variable may be needed if your system is
 excessively buffering python's output.
 
-The PYTHONENCODING environment variable may also be needed to keep python2
+The `PYTHONENCODING` environment variable may also be needed to keep python2
 from exiting due to those smelly string encoding exceptions.
 
 You can override the default timeout of 300s between scanning new threads with
