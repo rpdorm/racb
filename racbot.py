@@ -8,26 +8,30 @@
 import praw
 import time
 import os
-from sys import stdout
 from os import environ
+from datetime import datetime
 
-OC_SUBREDDIT = environ.get("RACBOT_OC_SUBREDDIT")
-X_SUBREDDIT = environ.get("RACBOT_XP_SUBREDDIT")
-LIMIT = environ.get("RACBOT_LIMIT")
-USERNAME = environ.get("RACBOT_USERNAME")
-PASSWORD = environ.get("RACBOT_PASSWORD")
-CLIENT_ID = environ.get("RACBOT_CLIENT_ID")
-CLIENT_SECRET = environ.get("RACBOT_CLIENT_SECRET")
-DEBUG = environ.get("RACBOT_DEBUG")
+OC_SUBREDDIT = environ.get('RACBOT_OC_SUBREDDIT')
+X_SUBREDDIT = environ.get('RACBOT_XP_SUBREDDIT')
+LIMIT = environ.get('RACBOT_LIMIT')
+USERNAME = environ.get('RACBOT_USERNAME')
+PASSWORD = environ.get('RACBOT_PASSWORD')
+CLIENT_ID = environ.get('RACBOT_CLIENT_ID')
+CLIENT_SECRET = environ.get('RACBOT_CLIENT_SECRET')
+DEBUG = environ.get('RACBOT_DEBUG')
 
 USER_AGENT = 'script:reddit anti-censorship bot:v0.1.0:created by /u/rpdorm'
 
 if not OC_SUBREDDIT:
-    raise ValueError("Missing Environment Variable: RACBOT_OC_SUBREDDIT")
+    raise ValueError('Missing Environment Variable: RACBOT_OC_SUBREDDIT')
 
 def print_debug(*args):
     if DEBUG:
-        print(u" ".join(args))
+        print(u' '.join(args))
+
+def log(*args):
+    timestamp = datetime.now()
+    print(u'{}: {}'.format(timestamp, u' '.join(args)))
 
 def Reddit():
     return praw.Reddit(
@@ -43,7 +47,7 @@ def scan_new_threads():
 
     # SCAN NEW THREADS
     f_threads = open('threads.txt', 'a')
-    print('Checking r/' + OC_SUBREDDIT)
+    log('Checking r/{}'.format(OC_SUBREDDIT))
     for new_thread in reddit.subreddit(OC_SUBREDDIT).new(limit=LIMIT):
         saved = False
         submission = reddit.submission(id=new_thread.id)
@@ -53,7 +57,7 @@ def scan_new_threads():
             saved=True
         # IF NOT...
         if saved is False:
-            print('Saving ' + submission.id + ' ' + submission.title)
+            log(u'Saving #{} {}'.format(submission.id, submission.title))
             ## SAVE THEM
             author = submission.author.name
             permalink = submission.permalink
@@ -88,16 +92,16 @@ def check_removed():
         submission = reddit.submission(id=this_thread)
         if submission.selftext == '[removed]':
             if this_thread not in open('shared_threads.txt').read():
-                print(this_thread + ' has been removed.')
-                s = open("shared_threads.txt", "a")
+                log('{} has been removed'.format(this_thread))
+                s = open('shared_threads.txt', 'a')
                 share_removed_post(this_thread)
                 s.write(this_thread + '\n')
         elif submission.locked is True:
-            print(this_thread + ' is locked.')
+            log('{} is locked'.format(this_thread))
 
 def share_removed_post(thread):
     reddit = Reddit()
-    print('Reporting '+ thread +'...')
+    log('Reporting {}...'.format(thread))
     title = 'threads/'+thread+'/title.txt'
     author = 'threads/'+thread+'/author.txt'
     body = 'threads/'+thread+'/body.txt'
@@ -120,7 +124,7 @@ def share_removed_post(thread):
     oc_permalink.close()
 
     # REORG
-    t = open("temp.txt", "w")
+    t = open('temp.txt', 'w')
     t.write('~ [OC](' + removed_permalink + ') by u/'+ removed_author)
     t.write('\n\n')
     t.write(removed_body)
@@ -131,6 +135,6 @@ def share_removed_post(thread):
     new_cross_post = reddit.subreddit(X_SUBREDDIT).submit(removed_title, selftext=selftext)
 
 
-print_debug("Entering main loop...")
+print_debug('Entering main loop...')
 while True:
     scan_new_threads()
