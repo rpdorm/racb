@@ -29,20 +29,18 @@ def print_debug(*args):
     if DEBUG:
         print(u" ".join(args))
 
-
-
-
-
-
-
-# SCAN NEW THREADS
-def scan_new_threads():
-    reddit = praw.Reddit(
+def Reddit():
+    return praw.Reddit(
         client_id=CLIENT_ID,
         client_secret=CLIENT_SECRET,
         password=PASSWORD,
         user_agent=USER_AGENT,
         username=USERNAME)
+
+# SCAN NEW THREADS
+def scan_new_threads():
+    reddit = Reddit()
+
     # SCAN NEW THREADS
     f_threads = open('threads.txt', 'a')
     print('Checking r/' + OC_SUBREDDIT)
@@ -82,12 +80,7 @@ def scan_new_threads():
     time.sleep(300)
 
 def check_removed():
-    reddit = praw.Reddit(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        password=PASSWORD,
-        user_agent=USER_AGENT,
-        username=USERNAME)
+    reddit = Reddit()
     saved_threads = os.listdir('threads')
     num_saved_threads = len(saved_threads)
     for x in range(0,num_saved_threads):
@@ -103,12 +96,7 @@ def check_removed():
             print(this_thread + ' is locked.')
 
 def share_removed_post(thread):
-    reddit = praw.Reddit(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        password=PASSWORD,
-        user_agent=USER_AGENT,
-        username=USERNAME)
+    reddit = Reddit()
     print('Reporting '+ thread +'...')
     title = 'threads/'+thread+'/title.txt'
     author = 'threads/'+thread+'/author.txt'
