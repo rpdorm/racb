@@ -8,6 +8,7 @@
 import praw
 import time
 import os
+from sys import stdout
 from os import environ
 
 OC_SUBREDDIT = environ.get("RACBOT_OC_SUBREDDIT")
@@ -17,11 +18,22 @@ USERNAME = environ.get("RACBOT_USERNAME")
 PASSWORD = environ.get("RACBOT_PASSWORD")
 CLIENT_ID = environ.get("RACBOT_CLIENT_ID")
 CLIENT_SECRET = environ.get("RACBOT_CLIENT_SECRET")
+DEBUG = environ.get("RACBOT_DEBUG")
 
 USER_AGENT = 'script:reddit anti-censorship bot:v0.1.0:created by /u/rpdorm'
 
 if not OC_SUBREDDIT:
     raise ValueError("Missing Environment Variable: RACBOT_OC_SUBREDDIT")
+
+def print_debug(*args):
+    if DEBUG:
+        print(u" ".join(args))
+
+
+
+
+
+
 
 # SCAN NEW THREADS
 def scan_new_threads():
@@ -131,5 +143,6 @@ def share_removed_post(thread):
     new_cross_post = reddit.subreddit(X_SUBREDDIT).submit(removed_title, selftext=selftext)
 
 
+print_debug("Entering main loop...")
 while True:
     scan_new_threads()
