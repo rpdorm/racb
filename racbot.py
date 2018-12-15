@@ -1,23 +1,27 @@
 #### REDDIT ANTI-CENSORSHIP BOT
 #### Version: 0.1.0
 #### Created by u/rpdorm
-#### Contributors: 
+#### Contributors:
 #### SAVING THREADS SINCE DEC 2018
 
 #!/usr/local/bin/python
 import praw
 import time
 import os
+from os import environ
 
-OC_SUBREDDIT = ''
-X_SUBREDDIT = ''
-LIMIT = 5
-# AUTHENTICATE AND DEFINE SUBREDDITS
-USERNAME = ''
-PASSWORD = ''
-CLIENT_ID = ''
-CLIENT_SECRET = ''
+OC_SUBREDDIT = environ.get("RACBOT_OC_SUBREDDIT")
+X_SUBREDDIT = environ.get("RACBOT_XP_SUBREDDIT")
+LIMIT = environ.get("RACBOT_LIMIT")
+USERNAME = environ.get("RACBOT_USERNAME")
+PASSWORD = environ.get("RACBOT_PASSWORD")
+CLIENT_ID = environ.get("RACBOT_CLIENT_ID")
+CLIENT_SECRET = environ.get("RACBOT_CLIENT_SECRET")
+
 USER_AGENT = 'script:reddit anti-censorship bot:v0.1.0:created by /u/rpdorm'
+
+if not OC_SUBREDDIT:
+    raise ValueError("Missing Environment Variable: RACBOT_OC_SUBREDDIT")
 
 # SCAN NEW THREADS
 def scan_new_threads():
