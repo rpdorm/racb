@@ -19,7 +19,7 @@ PASSWORD = environ.get('RACBOT_PASSWORD')
 CLIENT_ID = environ.get('RACBOT_CLIENT_ID')
 CLIENT_SECRET = environ.get('RACBOT_CLIENT_SECRET')
 DEBUG = environ.get('RACBOT_DEBUG')
-SLEEP_TIMEOUT = environ.get('RACBOT_SLEEP_TIMEOUT', 300)
+SLEEP_TIMEOUT = int(environ.get('RACBOT_SLEEP_TIMEOUT', '300'))
 
 USER_AGENT = 'script:reddit anti-censorship bot:v0.1.0:created by /u/rpdorm'
 
@@ -82,6 +82,8 @@ def scan_new_threads():
                 f_thread_permalink.close()
             f_threads.write(submission.id + '\n')
     check_removed()
+
+    log('Pausing for {}s...'.format(SLEEP_TIMEOUT))
     time.sleep(SLEEP_TIMEOUT)
 
 def check_removed():
