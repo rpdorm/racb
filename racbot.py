@@ -61,21 +61,21 @@ def scan_new_threads():
             ## SAVE THEM
             author = submission.author.name
             permalink = submission.permalink
-            e = 'threads/'+submission.id+'/title.txt'
+            e = 'threads/{}/title.txt'.format(submission.id)
             if not os.path.exists(e):
                 os.makedirs(os.path.dirname(e))
             with open(e, 'w') as f_thread_title:
                 f_thread_title.write(title.encode('utf-8'))
                 f_thread_title.close()
-            f = 'threads/'+submission.id+'/body.txt'
+            f = 'threads/{}/body.txt'.format(submission.id)
             with open(f, 'w') as f_thread_body:
                 f_thread_body.write(submission.selftext.encode('utf-8'))
                 f_thread_body.close()
-            g = 'threads/'+submission.id+'/author.txt'
+            g = 'threads/{}/author.txt'.format(submission.id)
             with open(g, 'w') as f_thread_author:
                 f_thread_author.write(author.encode('utf-8'))
                 f_thread_author.close()
-            h = 'threads/'+submission.id+'/permalink.txt'
+            h = 'threads/{}/permalink.txt'.format(submission.id)
             with open(h, 'w') as f_thread_permalink:
                 f_thread_permalink.write(permalink.encode('utf-8'))
                 f_thread_permalink.close()
@@ -102,13 +102,13 @@ def check_removed():
 def share_removed_post(thread):
     reddit = Reddit()
     log('Reporting {}...'.format(thread))
-    title = 'threads/'+thread+'/title.txt'
-    author = 'threads/'+thread+'/author.txt'
-    body = 'threads/'+thread+'/body.txt'
-    permalink = 'threads/'+thread+'/permalink.txt'
+    title = 'threads/{}/title.txt'.format(thread)
+    author = 'threads/{}/author.txt'.format(thread)
+    body = 'threads/{}/body.txt'.format(thread)
+    permalink = 'threads/{}/permalink.txt'.format(thread)
 
     oc_title = open(title, 'r')
-    removed_title = '[REMOVED] ' + oc_title.read()
+    removed_title = '[REMOVED] {}'.format(oc_title.read())
     oc_title.close()
 
     oc_author = open(author, 'r')
@@ -125,7 +125,7 @@ def share_removed_post(thread):
 
     # REORG
     t = open('temp.txt', 'w')
-    t.write('~ [OC](' + removed_permalink + ') by u/'+ removed_author)
+    t.write('~ [OC]({}) by u/{}'.format(removed_permalink, removed_author))
     t.write('\n\n')
     t.write(removed_body)
     t.close()
