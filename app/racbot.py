@@ -9,7 +9,6 @@ import yaml
 import praw
 import time
 import os
-from os import environ
 from datetime import datetime
 
 with open('config.yml', 'r') as f:
