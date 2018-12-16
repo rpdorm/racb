@@ -70,7 +70,7 @@ def scan_new_threads():
             e = 'threads/{}/title.txt'.format(submission.id)
             if not os.path.exists(e):
                 os.makedirs(os.path.dirname(e))
-            with open(e, 'w') as f_thread_title:
+            with open(e, 'wb') as f_thread_title:
                 f_thread_title.write(title.encode('utf-8'))
                 f_thread_title.close()
             f = 'threads/{}/body.txt'.format(submission.id)
@@ -78,11 +78,11 @@ def scan_new_threads():
                 f_thread_body.write(submission.selftext.encode('utf-8'))
                 f_thread_body.close()
             g = 'threads/{}/author.txt'.format(submission.id)
-            with open(g, 'w') as f_thread_author:
+            with open(g, 'wb') as f_thread_author:
                 f_thread_author.write(author.encode('utf-8'))
                 f_thread_author.close()
             h = 'threads/{}/permalink.txt'.format(submission.id)
-            with open(h, 'w') as f_thread_permalink:
+            with open(h, 'wb') as f_thread_permalink:
                 f_thread_permalink.write(permalink.encode('utf-8'))
                 f_thread_permalink.close()
             f_threads.write(submission.id + '\n')
