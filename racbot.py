@@ -106,6 +106,7 @@ def scan_new_threads():
 
 def check_removed():
     reddit = Reddit()
+
     saved_threads = os.listdir('.data/{}/threads'.format(OC_SUBREDDIT))
     num_saved_threads = len(saved_threads)
     for x in range(0,num_saved_threads):
@@ -122,7 +123,9 @@ def check_removed():
 
 def share_removed_post(thread):
     reddit = Reddit()
+
     log('Reporting {}...'.format(thread))
+
     title = '.data/{}/threads/{}/title.txt'.format(OC_SUBREDDIT, thread)
     author = '.data/{}/threads/{}/author.txt'.format(OC_SUBREDDIT, thread)
     body = '.data/{}/threads/{}/body.txt'.format(OC_SUBREDDIT, thread)
@@ -144,17 +147,10 @@ def share_removed_post(thread):
     removed_permalink = oc_permalink.read()
     oc_permalink.close()
 
-    # REORG
-    t = open_with_path('.data/{}/temp.txt'.format(OC_SUBREDDIT), 'w')
-    t.write('~ [OC]({}) by u/{}'.format(removed_permalink, removed_author))
-    t.write('\n\n')
-    t.write(removed_body)
-    t.close()
-    # POST
-    x = open_with_path('.data/{}/temp.txt'.format(OC_SUBREDDIT), 'r')
-    selftext = x.read()
+    selftext = '~ [OC]({}) by u/{}'.format(removed_permalink, removed_author)
+    selftext += '\n\n'
+    selftext += removed_body
     new_cross_post = reddit.subreddit(X_SUBREDDIT).submit(removed_title, selftext=selftext)
-
 
 print_debug('Entering main loop...')
 while True:
