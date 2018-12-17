@@ -8,4 +8,6 @@ user:
   password:
   client_id:
   client_secret:
-  user_agent:
+  user_agent: script:reddit anti-censorship bot:v0.1.0:created by /u/rpdorm
+  debug: False
+  sleep: 300

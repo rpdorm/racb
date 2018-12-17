@@ -13,27 +13,13 @@ import errno
 from os import path, makedirs
 from datetime import datetime
 
-with open('config.yml', 'r') as f:
-    data = yaml.load(f)
-
-OC_SUBREDDIT = data['subreddit']['original']
-X_SUBREDDIT = data['subreddit']['new']
-LIMIT = data['user']['limit']
-USERNAME = data['user']['username']
-PASSWORD = data['user']['password']
-CLIENT_ID = data['user']['client_id']
-CLIENT_SECRET = data['user']['client_secret']
-DEBUG = data['user']['debug']
-SLEEP_TIMEOUT = data['user']['sleep']
-USER_AGENT = data['user']['user_agent']
-
-USER_AGENT = 'script:reddit anti-censorship bot:v0.1.0:created by /u/rpdorm'
-
-if not OC_SUBREDDIT:
-    raise ValueError('Missing Environment Variable: RACBOT_OC_SUBREDDIT')
+def load_config():
+    with open('config.yml', 'r') as f:
+        data = yaml.load(f)
+    return data['subreddit']['original'], data['subreddit']['new'], data['user']
 
 def print_debug(*args):
-    if DEBUG:
+    if user['debug']:
         print(u' '.join(args))
 
 def log(*args):
@@ -42,11 +28,11 @@ def log(*args):
 
 def Reddit():
     return praw.Reddit(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        password=PASSWORD,
-        user_agent=USER_AGENT,
-        username=USERNAME)
+        client_id=user['client_id'],
+        client_secret=user['client_secret'],
+        password=user['password'],
+        user_agent=user['user_agent'],
+        username=user['username'])
 
 def open_with_path(pathfilename, mode='r'):
     if not path.exists(path.dirname(pathfilename)):
@@ -66,7 +52,7 @@ def scan_new_threads():
     f_threads = open_with_path('.data/{}/threads.txt'.format(OC_SUBREDDIT), 'a')
     log('Checking r/{}'.format(OC_SUBREDDIT))
 
-    for new_thread in reddit.subreddit(OC_SUBREDDIT).new(limit=LIMIT):
+    for new_thread in reddit.subreddit(OC_SUBREDDIT).new(limit=user['limit']):
         saved = False
         submission = reddit.submission(id=new_thread.id)
         title = submission.title
@@ -106,8 +92,8 @@ def scan_new_threads():
 
     check_removed()
 
-    log('Pausing for {}s...'.format(SLEEP_TIMEOUT))
-    time.sleep(SLEEP_TIMEOUT)
+    log('Pausing for {}s...'.format(user['sleep']))
+    time.sleep(user['sleep'])
 
 def check_removed():
     reddit = Reddit()
@@ -157,6 +143,9 @@ def share_removed_post(thread):
     selftext += removed_body
     new_cross_post = reddit.subreddit(X_SUBREDDIT).submit(removed_title, selftext=selftext)
 
+
+OC_SUBREDDIT, X_SUBREDDIT, user = load_config()
 print_debug('Entering main loop...')
+
 while True:
     scan_new_threads()

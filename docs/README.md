@@ -27,12 +27,14 @@ subreddit: [add subreddit names]
   original: subreddit to scan
   new: subreddit to post to
 
-user: [add reddit info]
-  limit: 30 (default value)
+user: default values [add reddit info]
+  limit: 30
     -> You can override the default number of new threads fetched on each timeout
   username:
   password:
   client_id:
   client_secret:
   user_agent:
+  debug: null
+  sleep: 300
 ```
