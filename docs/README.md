@@ -35,6 +35,6 @@ user: default values [add reddit info]
   client_id:
   client_secret:
   user_agent:
-  debug: null
+  debug: False
   sleep: 300
 ```
