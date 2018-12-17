@@ -5,28 +5,33 @@
 #### SAVING THREADS SINCE DEC 2018
 
 #!/usr/local/bin/python
-import yaml
+from datetime import datetime
+import os
 import praw
 import time
-import os
-import errno
-from os import path, makedirs
-from datetime import datetime
+import yaml
+
 
 def load_config():
+    """
+    loads config.yml
+    """
     with open('config.yml', 'r') as f:
         data = yaml.load(f)
     return data['subreddit']['original'], data['subreddit']['new'], data['user']
+
 
 def print_debug(*args):
     if user['debug']:
         print(u' '.join(args))
 
+
 def log(*args):
     timestamp = datetime.now()
     print(u'{}: {}'.format(timestamp, u' '.join(args)))
 
-def Reddit():
+
+def reddit_instance():
     return praw.Reddit(
         client_id=user['client_id'],
         client_secret=user['client_secret'],
@@ -34,118 +39,121 @@ def Reddit():
         user_agent=user['user_agent'],
         username=user['username'])
 
-def open_with_path(pathfilename, mode='r'):
-    if not path.exists(path.dirname(pathfilename)):
-        try:
-            makedirs(path.dirname(pathfilename))
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
 
-    return open(pathfilename, mode)
+def save_thread(thread):
+    """
+    saves thread content in seperate text files
+    """
+    for part in thread:
+        save_path = '.data/{}/threads/{}/{}.txt'.format(OC_SUBREDDIT, thread['id'], part)
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        with open(save_path, 'wb') as f:
+            f.write(thread[part].encode('utf-8'))
+            f.close()
 
-# SCAN NEW THREADS
+
+def load_threads():
+    """
+    :return: all saved thread ids from folder names
+    """
+    try:
+        saved = os.listdir('.data/{}/threads'.format(OC_SUBREDDIT))
+    except FileNotFoundError:
+        saved = []
+    return saved
+
+
+def submission_data(thread_id):
+    """
+    :return: thread data based on thread id
+    """
+    submission = reddit.submission(id=thread_id)
+    thread_data = {'id': submission.id,
+                   'title': submission.title,
+                   'author': submission.author.name,
+                   'body': submission.selftext,
+                   'permalink': submission.permalink
+                   }
+    return thread_data
+
+
 def scan_new_threads():
-    reddit = Reddit()
-
-    # SCAN NEW THREADS
-    f_threads = open_with_path('.data/{}/threads.txt'.format(OC_SUBREDDIT), 'a')
+    saved_ids = load_threads()
     log('Checking r/{}'.format(OC_SUBREDDIT))
 
     for new_thread in reddit.subreddit(OC_SUBREDDIT).new(limit=user['limit']):
-        saved = False
-        submission = reddit.submission(id=new_thread.id)
-        title = submission.title
-
+        thread = submission_data(new_thread.id)
         # CHECK IF THREAD IS ALREADY SAVED
-        if submission.id in open_with_path('.data/{}/threads.txt'.format(OC_SUBREDDIT)).read():
-            saved=True
+        if thread['id'] in saved_ids:
+            pass
+        else:
+            log(u'Saving #{} {}'.format(thread['id'], thread['title']))
+            save_thread(thread)
+            saved_ids.append(thread['id'])
 
-        # IF NOT...
-        if saved is False:
-            log(u'Saving #{} {}'.format(submission.id, submission.title))
-            ## SAVE THEM
-            author = submission.author.name
-            permalink = submission.permalink
-
-            e = '.data/{}/threads/{}/title.txt'.format(OC_SUBREDDIT, submission.id)
-            with open_with_path(e, 'w') as f_thread_title:
-                f_thread_title.write(title.encode('utf-8'))
-                f_thread_title.close()
-
-            f = '.data/{}/threads/{}/body.txt'.format(OC_SUBREDDIT, submission.id)
-            with open_with_path(f, 'w') as f_thread_body:
-                f_thread_body.write(submission.selftext.encode('utf-8'))
-                f_thread_body.close()
-
-            g = '.data/{}/threads/{}/author.txt'.format(OC_SUBREDDIT, submission.id)
-            with open_with_path(g, 'w') as f_thread_author:
-                f_thread_author.write(author.encode('utf-8'))
-                f_thread_author.close()
-
-            h = '.data/{}/threads/{}/permalink.txt'.format(OC_SUBREDDIT, submission.id)
-            with open_with_path(h, 'w') as f_thread_permalink:
-                f_thread_permalink.write(permalink.encode('utf-8'))
-                f_thread_permalink.close()
-
-            f_threads.write(submission.id + '\n')
-
-    check_removed()
-
+    check_removed(saved_ids)
     log('Pausing for {}s...'.format(user['sleep']))
     time.sleep(user['sleep'])
 
-def check_removed():
-    reddit = Reddit()
 
-    saved_threads = os.listdir('.data/{}/threads'.format(OC_SUBREDDIT))
-    num_saved_threads = len(saved_threads)
-    for x in range(0,num_saved_threads):
-        this_thread = saved_threads[x]
-        submission = reddit.submission(id=this_thread)
+def check_removed(saved_ids):
+    """
+    compares saved threads with removed threads
+    """
+    print('checking removed')
+    for id in saved_ids:
+        submission = reddit.submission(id=id)
+        shared_name = 'shared_threads.txt'
+        try:
+            f = open(shared_name, 'r')
+            shared_threads = f.read()
+        except IOError:
+            open(shared_name, 'a').close()
+            shared_threads = []
+
         if submission.selftext == '[removed]':
-            if this_thread not in open_with_path('.data/{}/shared_threads.txt').read():
-                log('{} has been removed'.format(this_thread))
-                s = open_with_path('.data/{}/shared_threads.txt'.format(OC_SUBREDDIT), 'a')
-                share_removed_post(this_thread)
-                s.write(this_thread + '\n')
+            if id not in shared_threads:
+                print('{} has been removed'.format(id))
+                share_removed_post(id)
+                s = open(shared_name, 'a')
+                s.write(id + '\n')
+                s.close()
         elif submission.locked is True:
-            log('{} is locked'.format(this_thread))
-
-def share_removed_post(thread):
-    reddit = Reddit()
-
-    log('Reporting {}...'.format(thread))
-
-    title = '.data/{}/threads/{}/title.txt'.format(OC_SUBREDDIT, thread)
-    author = '.data/{}/threads/{}/author.txt'.format(OC_SUBREDDIT, thread)
-    body = '.data/{}/threads/{}/body.txt'.format(OC_SUBREDDIT, thread)
-    permalink = '.data/{}/threads/{}/permalink.txt'.format(OC_SUBREDDIT, thread)
-
-    oc_title = open_with_path(title, 'r')
-    removed_title = '[REMOVED] {}'.format(oc_title.read())
-    oc_title.close()
-
-    oc_author = open_with_path(author, 'r')
-    removed_author = oc_author.read()
-    oc_author.close()
-
-    oc_body = open_with_path(body, 'r')
-    removed_body = oc_body.read()
-    oc_body.close()
-
-    oc_permalink = open_with_path(permalink, 'r')
-    removed_permalink = oc_permalink.read()
-    oc_permalink.close()
-
-    selftext = '~ [OC]({}) by u/{}'.format(removed_permalink, removed_author)
-    selftext += '\n\n'
-    selftext += removed_body
-    new_cross_post = reddit.subreddit(X_SUBREDDIT).submit(removed_title, selftext=selftext)
+            print('{} is locked'.format(id))
 
 
-OC_SUBREDDIT, X_SUBREDDIT, user = load_config()
-print_debug('Entering main loop...')
+def share_removed_post(id):
+    """
+    shares removed thread with new subreddit
+    """
+    log('Reporting {}...'.format(id))
+    thread = {'id': None,
+              'title': None,
+              'author': None,
+              'body': None,
+              'permalink': None
+              }
 
-while True:
-    scan_new_threads()
+    for part in thread:
+        save_path = '.data/{}/threads/{}/{}.txt'.format(OC_SUBREDDIT, id, part)
+        if part == 'title':
+            with open(save_path, 'r') as f:
+                original_content = f.read()
+            thread['title'] = '[REMOVED] {}'.format(original_content)
+        else:
+            original_content = open(save_path, 'r')
+            thread[part] = original_content.read()
+            original_content.close()
+
+    selftext = '~ [OC] ({}) by u/{}\n\n{}'.format(thread['permalink'], thread['author'], thread['body'])
+    reddit.subreddit(X_SUBREDDIT).submit(thread['title'], selftext=selftext)
+
+
+if __name__ == '__main__':
+    OC_SUBREDDIT, X_SUBREDDIT, user = load_config()
+    reddit = reddit_instance()
+    print_debug('Entering main loop...')
+
+    while True:
+        scan_new_threads()
+
