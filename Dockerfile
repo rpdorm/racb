@@ -1,8 +1,9 @@
-FROM python:2
+FROM python:3.7
 
 RUN pip install praw
+RUN pip install pyyaml
 
 ADD . /racbot
 
 WORKDIR /racbot
-ENTRYPOINT [ "python", "./racbot.py" ]
+ENTRYPOINT [ "python", "./app/racbot.py" ]

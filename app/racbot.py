@@ -5,22 +5,27 @@
 #### SAVING THREADS SINCE DEC 2018
 
 #!/usr/local/bin/python
+import yaml
 import praw
 import time
 import os
 import errno
-from os import environ, path, makedirs
+from os import path, makedirs
 from datetime import datetime
 
-OC_SUBREDDIT = environ.get('RACBOT_OC_SUBREDDIT')
-X_SUBREDDIT = environ.get('RACBOT_XP_SUBREDDIT')
-LIMIT = environ.get('RACBOT_LIMIT')
-USERNAME = environ.get('RACBOT_USERNAME')
-PASSWORD = environ.get('RACBOT_PASSWORD')
-CLIENT_ID = environ.get('RACBOT_CLIENT_ID')
-CLIENT_SECRET = environ.get('RACBOT_CLIENT_SECRET')
-DEBUG = environ.get('RACBOT_DEBUG')
-SLEEP_TIMEOUT = int(environ.get('RACBOT_SLEEP_TIMEOUT', '300'))
+with open('config.yml', 'r') as f:
+    data = yaml.load(f)
+
+OC_SUBREDDIT = data['subreddit']['original']
+X_SUBREDDIT = data['subreddit']['new']
+LIMIT = data['user']['limit']
+USERNAME = data['user']['username']
+PASSWORD = data['user']['password']
+CLIENT_ID = data['user']['client_id']
+CLIENT_SECRET = data['user']['client_secret']
+DEBUG = data['user']['debug']
+SLEEP_TIMEOUT = data['user']['sleep']
+USER_AGENT = data['user']['user_agent']
 
 USER_AGENT = 'script:reddit anti-censorship bot:v0.1.0:created by /u/rpdorm'
 

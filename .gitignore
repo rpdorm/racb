@@ -2,3 +2,4 @@ threads/
 threads.txt
 shared_threads.txt
 temp.txt
+config.yml

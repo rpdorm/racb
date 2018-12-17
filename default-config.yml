@@ -1,0 +1,11 @@
+subreddit:
+  original:
+  new:
+
+user:
+  limit: 30
+  username:
+  password:
+  client_id:
+  client_secret:
+  user_agent:
