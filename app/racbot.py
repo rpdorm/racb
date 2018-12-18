@@ -1,7 +1,4 @@
 #### REDDIT ANTI-CENSORSHIP BOT
-#### Version: 0.1.0
-#### Created by u/rpdorm
-#### Contributors:
 #### SAVING THREADS SINCE DEC 2018
 
 #!/usr/local/bin/python
@@ -156,4 +153,3 @@ if __name__ == '__main__':
 
     while True:
         scan_new_threads()
-
